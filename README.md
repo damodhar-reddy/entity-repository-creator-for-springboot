@@ -1,0 +1,1 @@
+# entity-repository-creator-for-springboot
