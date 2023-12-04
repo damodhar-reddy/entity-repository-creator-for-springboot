@@ -7,16 +7,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.entity.create.requests.EntityCreateRequest;
-import com.entity.create.services.EntityCreateService;
+import com.entity.create.services.CreateService;
 
 @RestController
-@RequestMapping("/entity")
-public class EntityCreateController {
+@RequestMapping()
+public class CreateController {
 	@Autowired
-	private EntityCreateService entityCreateService;
+	private CreateService createService;
 	
-	@PostMapping("/creator")
+	@PostMapping("/entity/creator")
 	public String entityCreator(@RequestBody EntityCreateRequest entityCreateRequest){
-		return entityCreateService.entityCreator(entityCreateRequest);
+		return createService.entityCreator(entityCreateRequest);
+	}
+	
+	@PostMapping("/repository/creator")
+	public String repositoryCreator(@RequestBody EntityCreateRequest repositoryCreateRequest) {
+		return createService.repositoryCreator(repositoryCreateRequest);
 	}
 }
