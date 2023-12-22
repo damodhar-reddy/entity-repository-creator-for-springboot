@@ -21,6 +21,7 @@ public class CreateServiceImpl implements CreateService {
 		List<Object[]> tableData = entityCreatorRepository.getTableData(tableName);
 		if (tableData.size() > 0) {
 			StringBuilder entityString = new StringBuilder();
+			boolean flag = entityCreatorRepository.checkJson(tableName);
 			entityString.append("import javax.persistence.Column;\r\n" + "import javax.persistence.Entity;\r\n"
 					+ "import javax.persistence.GeneratedValue;\r\n" + "import javax.persistence.GenerationType;\r\n"
 					+ "import javax.persistence.Id;\r\n" + "import javax.persistence.Table;\r\n" + "\r\n"
@@ -28,8 +29,11 @@ public class CreateServiceImpl implements CreateService {
 					+ "import lombok.NoArgsConstructor;\r\n" + "import lombok.ToString;" + "\r\n" + "@Data\r\n"
 					+ "@NoArgsConstructor\r\n" + "@AllArgsConstructor\r\n" + "@ToString\r\n" + "@Entity\r\n"
 					+ "@Table(name = \"");
-			entityString.append(tableName.toUpperCase() + "\")\r\n\r\n\r\n" + "public class "
-					+ convetToClassName(tableName) + "Entity { \r\n\r\n");
+			entityString.append(tableName.toUpperCase() + "\")");
+			if (flag) {
+				entityString.append("\r\n@TypeDef(name = \"json\", typeClass = JsonType.class)");
+			}
+			entityString.append("\r\n\r\n\r\n" + "public class " + convetToClassName(tableName) + "Entity { \r\n\r\n");
 			String primaryKeyColumn = entityCreatorRepository.getPrimaryKeyColumnName(tableName);
 			// column names
 			tableData.forEach(data -> {
@@ -41,8 +45,14 @@ public class CreateServiceImpl implements CreateService {
 				if (primaryKeyColumn.equals(columnName)) {
 					entityString.append("	@Id\r\n" + "	@GeneratedValue(strategy = GenerationType.IDENTITY)\r\n");
 				}
-				entityString.append("	@Column(name = \"");
-				entityString.append(data[1].toString().toUpperCase() + "\")\r\n");
+				if (data[2].toString().equals("json")) {
+					entityString.append(
+							"	@Type(type = \"json\")\r\n" + "	@Column(columnDefinition = \"json\", name = \"");
+					entityString.append(data[1].toString().toUpperCase() + "\")\r\n");
+				} else {
+					entityString.append("	@Column(name = \"");
+					entityString.append(data[1].toString().toUpperCase() + "\")\r\n");
+				}
 				String dataType = "";
 				switch (data[2].toString()) {
 				case "integer":
@@ -57,6 +67,9 @@ public class CreateServiceImpl implements CreateService {
 					break;
 				case "character":
 					dataType = "char";
+					break;
+				case "json":
+					dataType = "Map<String, Object>";
 					break;
 				case "date":
 				case "time with time zone":
